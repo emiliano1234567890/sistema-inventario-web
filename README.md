@@ -2,6 +2,12 @@
 
 Aplicación web desarrollada con React para registrar, consultar, editar y eliminar productos de un inventario.
 
+## Demo del proyecto
+
+Puedes ver el proyecto publicado en el siguiente enlace:
+
+https://sistema-inventario-web-ashen.vercel.app/
+
 ## Descripción del proyecto
 
 Este proyecto fue desarrollado como una simulación de un sistema básico de inventario interno.
