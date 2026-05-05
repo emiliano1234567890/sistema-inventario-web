@@ -1,346 +1,208 @@
-import { useEffect, useMemo, useState } from 'react';
-import './index.css';
-
-const initialForm = {
-  name: '',
-  category: '',
-  price: '',
-  stock: '',
-};
+import "./index.css";
 
 function App() {
-  const [products, setProducts] = useState(() => {
-    const savedProducts = localStorage.getItem('inventory-products');
-    return savedProducts ? JSON.parse(savedProducts) : [];
-  });
-
-  const [form, setForm] = useState(initialForm);
-  const [editingId, setEditingId] = useState(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Todos');
-
-  useEffect(() => {
-    localStorage.setItem('inventory-products', JSON.stringify(products));
-  }, [products]);
-
-  const getProductStatus = (stock) => {
-    const quantity = Number(stock);
-
-    if (quantity === 0) return 'Agotado';
-    if (quantity <= 5) return 'Bajo stock';
-    return 'Disponible';
+  const stats = {
+    total: 3,
+    available: 1,
+    lowStock: 1,
+    outOfStock: 1,
   };
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const products = [
+    {
+      id: 51487,
+      name: "Mouse óptico",
+      category: "Accesorios",
+      price: 150,
+      stock: 0,
+      date: "4/5/2026",
+    },
+    {
+      id: 31769,
+      name: "Cable Ethernet",
+      category: "Redes",
+      price: 80,
+      stock: 4,
+      date: "4/5/2026",
+    },
+    {
+      id: 17198,
+      name: "Teclado inalámbrico",
+      category: "Accesorios",
+      price: 450,
+      stock: 12,
+      date: "4/5/2026",
+    },
+  ];
 
-    setForm({
-      ...form,
-      [name]: value,
-    });
+  const getStatus = (stock) => {
+    if (stock === 0) return "Agotado";
+    if (stock <= 5) return "Bajo stock";
+    return "Disponible";
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (!form.name.trim() || !form.category.trim() || !form.price || !form.stock) {
-      alert('Por favor completa todos los campos.');
-      return;
-    }
-
-    if (Number(form.price) <= 0 || Number(form.stock) < 0) {
-      alert('El precio debe ser mayor a 0 y la existencia no puede ser negativa.');
-      return;
-    }
-
-    if (editingId) {
-      const updatedProducts = products.map((product) =>
-        product.id === editingId
-          ? {
-              ...product,
-              name: form.name.trim(),
-              category: form.category.trim(),
-              price: Number(form.price),
-              stock: Number(form.stock),
-              status: getProductStatus(form.stock),
-            }
-          : product
-      );
-
-      setProducts(updatedProducts);
-      setEditingId(null);
-      setForm(initialForm);
-      return;
-    }
-
-    const newProduct = {
-      id: Date.now(),
-      name: form.name.trim(),
-      category: form.category.trim(),
-      price: Number(form.price),
-      stock: Number(form.stock),
-      status: getProductStatus(form.stock),
-      createdAt: new Date().toLocaleDateString('es-MX'),
-    };
-
-    setProducts([newProduct, ...products]);
-    setForm(initialForm);
+  const getStatusClass = (stock) => {
+    if (stock === 0) return "status status-danger";
+    if (stock <= 5) return "status status-warning";
+    return "status status-success";
   };
-
-  const handleEdit = (product) => {
-    setEditingId(product.id);
-
-    setForm({
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stock: product.stock,
-    });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setForm(initialForm);
-  };
-
-  const deleteProduct = (productId) => {
-    const confirmDelete = confirm('¿Seguro que deseas eliminar este producto?');
-
-    if (!confirmDelete) return;
-
-    const filteredProducts = products.filter((product) => product.id !== productId);
-    setProducts(filteredProducts);
-  };
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const searchText = search.toLowerCase();
-
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchText) ||
-        product.category.toLowerCase().includes(searchText);
-
-      const matchesStatus =
-        statusFilter === 'Todos' || product.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [products, search, statusFilter]);
-
-  const totalProducts = products.length;
-  const availableProducts = products.filter((product) => product.status === 'Disponible').length;
-  const lowStockProducts = products.filter((product) => product.status === 'Bajo stock').length;
-  const outOfStockProducts = products.filter((product) => product.status === 'Agotado').length;
 
   return (
-    <main className="app">
-      <header className="topbar">
+    <div className="inventory-app">
+      <header className="hero">
         <div>
-          <span className="system-label">Inventario interno</span>
-          <h1>Control de productos</h1>
+          <p className="hero-label">Panel de almacén</p>
+          <h1>Gestión de inventario</h1>
+          <p className="hero-text">
+            Administra productos, existencias y movimientos de forma visual y
+            ordenada.
+          </p>
         </div>
 
-        <div className="topbar-info">
-          <span>Panel administrativo</span>
-          <strong>Almacén</strong>
+        <div className="hero-badge">
+          <span>Sistema activo</span>
+          <strong>Inventario interno</strong>
         </div>
       </header>
 
-      <section className="layout">
-        <aside className="sidebar">
-          <div className="sidebar-card">
-            <h2>Resumen del inventario</h2>
-            <p>Control básico de productos, existencias y estado del stock.</p>
+      <section className="stats-grid">
+        <article className="stat-card stat-total">
+          <span className="stat-title">Productos registrados</span>
+          <h2>{stats.total}</h2>
+          <p>Control general del inventario</p>
+        </article>
+
+        <article className="stat-card stat-success">
+          <span className="stat-title">Disponibles</span>
+          <h2>{stats.available}</h2>
+          <p>Productos con stock suficiente</p>
+        </article>
+
+        <article className="stat-card stat-warning">
+          <span className="stat-title">Bajo stock</span>
+          <h2>{stats.lowStock}</h2>
+          <p>Requieren atención pronta</p>
+        </article>
+
+        <article className="stat-card stat-danger">
+          <span className="stat-title">Agotados</span>
+          <h2>{stats.outOfStock}</h2>
+          <p>Sin existencias en almacén</p>
+        </article>
+      </section>
+
+      <main className="content-grid">
+        <aside className="panel form-panel">
+          <div className="panel-header">
+            <h3>Registrar producto</h3>
+            <p>Agrega nuevos artículos al inventario.</p>
           </div>
 
-          <div className="summary-list">
-            <div>
-              <span>Total</span>
-              <strong>{totalProducts}</strong>
+          <form className="product-form">
+            <div className="field">
+              <label>Nombre del producto</label>
+              <input type="text" placeholder="Ej. Monitor LED" />
             </div>
 
-            <div>
-              <span>Disponibles</span>
-              <strong>{availableProducts}</strong>
+            <div className="field">
+              <label>Categoría</label>
+              <select>
+                <option>Selecciona una categoría</option>
+                <option>Accesorios</option>
+                <option>Redes</option>
+                <option>Periféricos</option>
+              </select>
             </div>
 
-            <div>
-              <span>Bajo stock</span>
-              <strong>{lowStockProducts}</strong>
+            <div className="field-row">
+              <div className="field">
+                <label>Precio</label>
+                <input type="number" placeholder="Ej. 450" />
+              </div>
+
+              <div className="field">
+                <label>Existencia</label>
+                <input type="number" placeholder="Ej. 10" />
+              </div>
             </div>
 
-            <div>
-              <span>Agotados</span>
-              <strong>{outOfStockProducts}</strong>
-            </div>
-          </div>
+            <button type="button" className="btn btn-primary full">
+              Guardar producto
+            </button>
+          </form>
 
-          <div className="note-box">
-            <strong>Objetivo</strong>
+          <div className="mini-box">
+            <h4>Tip de control</h4>
             <p>
-              Registrar productos, controlar existencias y detectar artículos con bajo stock.
+              Mantén actualizado el stock para detectar productos agotados o
+              próximos a terminarse.
             </p>
           </div>
         </aside>
 
-        <section className="main-content">
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>{editingId ? 'Editar producto' : 'Nuevo producto'}</h2>
-                <p>Captura la información principal del producto.</p>
-              </div>
-            </div>
+        <section className="panel table-panel">
+          <div className="panel-header">
+            <h3>Inventario actual</h3>
+            <p>Consulta, filtra y administra los productos registrados.</p>
+          </div>
 
-            <form className="product-form" onSubmit={handleSubmit}>
-              <label>
-                Nombre del producto
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Ej. Teclado inalámbrico"
-                />
-              </label>
+          <div className="toolbar">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Buscar por nombre o categoría"
+            />
 
-              <label>
-                Categoría
-                <select name="category" value={form.category} onChange={handleChange}>
-                  <option value="">Selecciona una categoría</option>
-                  <option value="Computo">Cómputo</option>
-                  <option value="Accesorios">Accesorios</option>
-                  <option value="Papeleria">Papelería</option>
-                  <option value="Redes">Redes</option>
-                  <option value="Otros">Otros</option>
-                </select>
-              </label>
+            <select className="filter-select">
+              <option>Todos los estados</option>
+              <option>Disponible</option>
+              <option>Bajo stock</option>
+              <option>Agotado</option>
+            </select>
+          </div>
 
-              <label>
-                Precio
-                <input
-                  type="number"
-                  name="price"
-                  value={form.price}
-                  onChange={handleChange}
-                  placeholder="Ej. 450"
-                  min="1"
-                />
-              </label>
-
-              <label>
-                Existencia
-                <input
-                  type="number"
-                  name="stock"
-                  value={form.stock}
-                  onChange={handleChange}
-                  placeholder="Ej. 10"
-                  min="0"
-                />
-              </label>
-
-              <div className="form-actions">
-                {editingId && (
-                  <button type="button" className="secondary-button" onClick={cancelEdit}>
-                    Cancelar
-                  </button>
-                )}
-
-                <button type="submit">
-                  {editingId ? 'Guardar cambios' : 'Registrar producto'}
-                </button>
-              </div>
-            </form>
-          </section>
-
-          <section className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>Productos registrados</h2>
-                <p>Consulta, filtra, edita y elimina productos del inventario.</p>
-              </div>
-            </div>
-
-            <div className="filters">
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Buscar por nombre o categoría"
-              />
-
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-              >
-                <option value="Todos">Todos los estados</option>
-                <option value="Disponible">Disponible</option>
-                <option value="Bajo stock">Bajo stock</option>
-                <option value="Agotado">Agotado</option>
-              </select>
-            </div>
-
-            {filteredProducts.length === 0 ? (
-              <div className="empty-state">
-                <strong>No hay productos para mostrar</strong>
-                <p>Registra un producto o modifica los filtros de búsqueda.</p>
-              </div>
-            ) : (
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Clave</th>
-                      <th>Producto</th>
-                      <th>Categoría</th>
-                      <th>Precio</th>
-                      <th>Existencia</th>
-                      <th>Estado</th>
-                      <th>Fecha</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id}>
-                        <td>#{String(product.id).slice(-5)}</td>
-                        <td>{product.name}</td>
-                        <td>{product.category}</td>
-                        <td>${product.price.toFixed(2)}</td>
-                        <td>{product.stock}</td>
-                        <td>
-                          <span className={`badge status-${product.status.toLowerCase().replace(' ', '-')}`}>
-                            {product.status}
-                          </span>
-                        </td>
-                        <td>{product.createdAt}</td>
-                        <td>
-                          <div className="table-actions">
-                            <button type="button" onClick={() => handleEdit(product)}>
-                              Editar
-                            </button>
-
-                            <button
-                              type="button"
-                              className="delete-button"
-                              onClick={() => deleteProduct(product.id)}
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+          <div className="table-wrapper">
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>Clave</th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.id}>
+                    <td>#{product.id}</td>
+                    <td className="product-name">{product.name}</td>
+                    <td>{product.category}</td>
+                    <td>${product.price}.00</td>
+                    <td>{product.stock}</td>
+                    <td>
+                      <span className={getStatusClass(product.stock)}>
+                        {getStatus(product.stock)}
+                      </span>
+                    </td>
+                    <td>{product.date}</td>
+                    <td>
+                      <div className="actions">
+                        <button className="btn btn-edit">Editar</button>
+                        <button className="btn btn-delete">Eliminar</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
 
